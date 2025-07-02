@@ -1,0 +1,33 @@
+
+
+🧠 #Day01 of Kubernetes
+🎯 Topic: Understanding the Difference Between Docker and Kubernetes
+1.	Single Host vs Multi-Host:
+Docker is designed to run containers on a single host machine, whereas Kubernetes is built to orchestrate containers across a cluster of machines. It can distribute containers across nodes (multiple hosts).
+For example:
+•	Docker is like an app on your phone — it runs in its own little environment.
+•	Kubernetes is like the App Store — it manages all the apps, handles updates, monitors performance, and keeps everything running smoothly across many devices.
+
+2.	Auto-Healing:
+When a container crashes or gets killed in Docker, it doesn’t restart automatically.
+But in Kubernetes, if a container crashes inside a pod, it is automatically restarted — helping maintain app availability.
+
+3.	Auto-Scaling:
+When traffic or load increases on a containerized application:
+•	Docker continues to serve requests with the same container, which can lead to high CPU usage and increased response times. It doesn't have built-in auto-scaling feature, so we have to scale manually.
+•	Kubernetes continuously monitors performance. If it detects high load, it automatically creates more pods. When the load decreases, it scales down to save resources and cost.
+
+4.	Enterprise-Level Support:
+
+Docker doesn't natively support enterprise features like:
+•	Adding firewall rules
+•	Built-in SSL/TLS termination
+Whereas Kubernetes:
+•	Supports network policies 
+•	SSL/TLS encryption via Ingress controllers.
+
+There are more differences, but I focused on the ones that stood out to me today.
+Also, fun fact while learning this — I got to know Kubernetes is called “K8s” because there are 8 letters between 'K' and 'S'! 🤯
+
+
+
