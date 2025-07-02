@@ -1,0 +1,63 @@
+Great effort! 🙌 You've captured the core of Kubernetes architecture really well. Here's your content with **grammar, vocabulary, and clarity improvements only**, while keeping your original structure and tone intact — ideal for LinkedIn or documentation.
+
+---
+
+🧠 **#Day02 of Kubernetes**
+🎯 **Topic: Kubernetes Architecture**
+
+Kubernetes is divided into two main parts:
+
+1️⃣ **Control Plane (or Master Node)**
+2️⃣ **Data Plane (or Worker Node)**
+
+---
+
+### 🔹 Control Plane Components:
+
+The **Control Plane** manages the overall state of the Kubernetes cluster. It has the following components:
+
+1. **API Server:**
+   The **core and heart** of Kubernetes. It acts as the **frontend** of the control plane and exposes the Kubernetes cluster to external users.
+   ➡️ All requests to the cluster (from users, kubectl, or controllers) first go through the API server.
+
+2. **Scheduler:**
+   Responsible for distributing containers (pods) across available nodes.
+   ➡️ It watches for newly created pods that are **not yet assigned** to a node and chooses the best node to run them on.
+
+3. **etcd:**
+   A **key-value store** used to store **all configuration and state** data of the Kubernetes cluster.
+   ➡️ Think of it as the **backup brain** of Kubernetes — storing everything from node status to secrets.
+
+4. **Controller Manager:**
+   Monitors and maintains the desired state of cluster resources.
+   ➡️ It includes several controllers such as the **Node Controller** and **Replication Controller**, which handle node health and pod replication.
+
+5. **Cloud Controller Manager:**
+   Responsible for managing cloud-specific integrations (e.g., with AWS, Azure, GCP).
+   ➡️ This component **only exists in cloud environments** and is not present in on-prem setups.
+
+---
+
+### 🔹 Data Plane Components:
+
+The **Data Plane** (or Worker Nodes) is responsible for **actually running the applications**.
+
+1. **Kubelet:**
+   An agent that runs on **every node** in the cluster.
+   ➡️ It ensures that containers are running inside pods as expected on each node.
+
+2. **Kube-Proxy:**
+   Handles **Kubernetes networking**.
+   ➡️ It assigns IPs to new pods and manages **network traffic routing** within the cluster — especially as pods scale based on load.
+
+---
+
+### 🧠 Summary:
+
+In simple terms:
+🔸 **Control Plane** = Controls the cluster (decision-making)
+🔸 **Data Plane** = Executes the instructions (runs your apps)
+
+---
+
+Let me know if you'd like this turned into a LinkedIn carousel or if you want a simple diagram to explain this visually!
