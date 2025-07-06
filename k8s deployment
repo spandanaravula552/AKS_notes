@@ -1,0 +1,8 @@
+k8s Deployment: The difference between container pod and deployment.
+we create the container using the command mentionining it specifications like container name, img name, port, network details.
+for creation of pod we use yaml manifest, by mentioning the container specifications, but pod can contain one or more containers.
+The deployment resource which will track the k8s replica set controller behaviour/it's state , behind it will create replica set, at the end it will creates pods only.
+replica set is a controller which will maintain the desired state of deployment yaml manifest .
+while creating the deployment, we will mention how many replica set we need in yaml manifest.
+for ex: in deployment yaml file, we mentioned two replica sets, then it creates 2 pods, if user automatically deletes one pod, replica set as controller creates one more pod, because in submitted yaml file , we mentioned
+that we need 2 replica set, so it has the feature of auto-healing.
