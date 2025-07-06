@@ -1,8 +1,50 @@
-k8s Deployment: The difference between container pod and deployment.
+k8s Deployment: The difference between container pod and deployment. (interview question)   priyanka@kodestree.com
 we create the container using the command mentionining it specifications like container name, img name, port, network details.
 for creation of pod we use yaml manifest, by mentioning the container specifications, but pod can contain one or more containers.
-The deployment resource which will track the k8s replica set controller behaviour/it's state , behind it will create replica set, at the end it will creates pods only.
+
+The deployment resource is like a abstraction which will track the k8s replica set controller behaviour/it's state , behind it will create replica set, at the end it will creates pods only.
 replica set is a controller which will maintain the desired state of deployment yaml manifest .
 while creating the deployment, we will mention how many replica set we need in yaml manifest.
 for ex: in deployment yaml file, we mentioned two replica sets, then it creates 2 pods, if user automatically deletes one pod, replica set as controller creates one more pod, because in submitted yaml file , we mentioned
 that we need 2 replica set, so it has the feature of auto-healing.
+
+🧠 #Day04 of Kubernetes
+
+🎯 Topic: The Deployment and Replica Set.
+
+
+
+The Deployment resource is like an abstraction that tracks the behavior/state of the Kubernetes ReplicaSet controller. 👉Behind the scenes, it creates a ReplicaSet, and in the end, the ReplicaSet creates Pods.
+
+
+
+A ReplicaSet is a controller that maintains the desired state as defined in the Deployment YAML manifest.
+
+
+
+While creating a Deployment, we specify how many replicas, we need in the YAML file.
+
+
+
+For example: In the Deployment YAML file, if we specify 3 replicas, it creates 3 Pods. If a 🛡️user manually deletes one Pod, the ReplicaSet automatically creates another Pod. 
+
+This happens because the YAML file specifies that we need 3 replicas. This is how Kubernetes provides self-healing capability🔁.
+
+
+
+To Create the Deployment: kubectl apply -f <yaml file name>
+
+To View the Deployment: kubectl get deployment
+
+To View the ReplicaSet: kubectl get rs  (rs is the shortcut for ReplicaSet)
+
+To View the pods : kubectl get pods
+
+
+
+Now to o
+
+
+
+
+
