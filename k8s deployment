@@ -42,7 +42,11 @@ To View the pods : kubectl get pods
 
 
 
-Now to o
+Now to observe the auto-healing feature of ReplicaSet, I have mntioned replica as 3 in Deployment yaml file, so, I have 3 nodes.
+
+Now I'm trying to delete one of the pod in one terminal, and in next terminal I observed that rs terminated that pod and creates new pod. That is why org are moving towards k8s, instead of docker.
+
+here I have attached my lab document, please refer it you understands in a better way.
 
 
 
