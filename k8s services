@@ -14,4 +14,48 @@ when we created the pod in deployment yaml file, we will add labels and selector
 so, next time, when pod goes down or killed, the label will remain the same, then load balancer send the request to the pod which has that label.
 so, finally service is keeping track of labels and IP addresses.so the label is same devloper problem is solved.
 one more function the service can do is it expose our application to the world, outside of k8s cluster. 
+k8s services:
+We can expose application using different types of services available in k8s.
+1. Cluster IP - app is accessible inside k8s cluster
+2.Node port mode - app is accessible who knows your nodes ip addresses and it's port
+3.Load Balancer - It exposes our application outside of k8s cluster, anyone can access the app.
+4.Ingress service
  
+
+
+
+
+
+we can decide pod size by how many users are hiting the app.
+If 1 pod can handle 10 requests & ur getting 100 reqs 🔥 then we need 10 pods 💡
+
+but hey, let's talk why we even need services in k8s 🤔
+
+For ex: u created a deployment with 2 replicas, so 2 pods got created & hosted 1 app in containers 🎯
+Now each pod got IPs like 👉 172.32.0.0, 172.32.1.0
+U gave these IPs to 2 devs to access the app...all good ✅
+
+But suddenly... one pod died 😱 and new pod got created by replicaset 💪
+Now it got new IP like 👉 172.32.1.1
+boom 💥 now dev can't access the app coz the old IP gone 🫠
+
+We usually don’t give IPs to users, right? we give URL's 🌐
+So to solve this, k8s gives us service (svc) 🛠️
+
+svc acts like a load balancer 🧠
+But wait, svc also can face same issue if it's pointing to old IP 👀
+so how does it work actually?
+
+👉 svc not track IPs, it uses labels & selectors 🏷️
+when we write deployment yaml, we put labels to pod
+svc matches labels, not IPs 🙌
+
+So even if pod goes down, new pod with same label gets traffic 💥
+Problem solved 😎 dev happy again 🧑‍💻
+
+Also svc can expose our app to outside world 🌍
+here are 3 types of services in k8s:
+
+1️⃣ ClusterIP – only inside cluster 🔒
+2️⃣ NodePort – accessible by node IP + port 🖧
+3️⃣ LoadBalancer – exposed to world 🌐 anyone can access it
