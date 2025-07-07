@@ -26,18 +26,18 @@ We can expose application using different types of services available in k8s.
 
 
 
-we can decide pod size by how many users are hiting the app.
-If 1 pod can handle 10 requests & ur getting 100 reqs 🔥 then we need 10 pods 💡
+we can decide pod size by how many users are hiting the application.
+If 1 pod can handle 10 requests & its getting 100 reqs 🔥 then we need 10 pods 💡
 
-but hey, let's talk why we even need services in k8s 🤔
+let's discuss why we need services in k8s 🤔
 
-For ex: u created a deployment with 2 replicas, so 2 pods got created & hosted 1 app in containers 🎯
+For ex: we created a deployment with 2 replicas, so 2 pods got created & hosted 1 application in containers 🎯
 Now each pod got IPs like 👉 172.32.0.0, 172.32.1.0
-U gave these IPs to 2 devs to access the app...all good ✅
+we gave these IPs to 2 devlopers to access the application all good ✅
 
-But suddenly... one pod died 😱 and new pod got created by replicaset 💪
+But suddenly... one pod goes down 😱 and new pod got created by replicaset 💪
 Now it got new IP like 👉 172.32.1.1
-boom 💥 now dev can't access the app coz the old IP gone 🫠
+boom 💥 now devloper can't access the app because the old IP gone 🫠
 
 We usually don’t give IPs to users, right? we give URL's 🌐
 So to solve this, k8s gives us service (svc) 🛠️
@@ -46,9 +46,8 @@ svc acts like a load balancer 🧠
 But wait, svc also can face same issue if it's pointing to old IP 👀
 so how does it work actually?
 
-👉 svc not track IPs, it uses labels & selectors 🏷️
-when we write deployment yaml, we put labels to pod
-svc matches labels, not IPs 🙌
+👉 svc not track IPs, it uses labels & selectors 🏷️ when we write deployment yaml file, we put labels to pod
+so, that service will not track the IP addresses, it will track the labels and selectors of pod 🙌
 
 So even if pod goes down, new pod with same label gets traffic 💥
 Problem solved 😎 dev happy again 🧑‍💻
