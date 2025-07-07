@@ -1,0 +1,17 @@
+Kubernetes services: 
+
+we can determine the size of pod, by how many users are hitting the application. if one pod can handle 10 request, and you have 100 requests are coming in, then we need to create 10 pods.
+let's discuss, why we need services in k8s.
+for ex: you created one deployment with 2 replicas, so that 2 pods got created, and hosted one application in the containers.
+lets say each pod is assigned with the ip address 172.32.0.0, 172.32.1.0 and you given these ip's to two different developers to access the application.
+with some problem or any issue, pod is killed and new pod got created by replicaset controller.
+now k8s assigned different ip address to new pod,let's say 172.32.1.1,  now one of the developer is not able to access the application.
+in general we will not give ip address to users to access the application, we will give URL's.
+so, to avoid this, k8s introduces a service (svc), which ascts as load balancer.
+again the service also face the same situation, because the load balancer will sent the user request to old ip addreess, in that case user is not able to reach the application.
+now the service will not track the IP addresses, it has the mechanism of labels and selectors
+when we created the pod in deployment yaml file, we will add labels and selectors to the pods, so, that service will not track the IP addresses, it will track the labels and selectors of pod.
+so, next time, when pod goes down or killed, the label will remain the same, then load balancer send the request to the pod which has that label.
+so, finally service is keeping track of labels and IP addresses.so the label is same devloper problem is solved.
+one more function the service can do is it expose our application to the world, outside of k8s cluster. 
+ 
