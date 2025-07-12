@@ -1,0 +1,8 @@
+what is a label: Label in k8s is nothing but tag,  used to identify the pods, nodes, relica sets.
+for ex: in kitchen, we attach stickey notes to the boxes, like this is salt, this is tea.
+so here boxes is nothing but resources like pods, nodes, notes is nothing but label. labels are just little tags to help identify them.
+
+
+What is Selector: selector is used in deployment, replica set, load balancer, ingress services.
+this is used to find and connect to the right pods.
+ex: give me the boxes which have the stickey notes of salt.
