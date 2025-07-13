@@ -1,3 +1,7 @@
+az aks get-credentials --resource-group ingress-aks-rg --name spanAKSCluster
+
+
+
 ingress resource: it is just a resource in AKS, something like pods and node, which configures routing rules.
 
 ingress controller: it read those rules which are defined in the ingress resource, configures load balancer and does the routing.
@@ -7,11 +11,11 @@ benefit of ingress:  a single IP address can be used to route traffic to multipl
 Pre-requisites to create ingress controller (I have chose NGINX ingress controller):
 1. Helm3 installed (by default Helm3 installed in azure cloud shell)
 2.if not, run this curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-3.
-📦 1. NGINX Ingress Controller is packaged as a Helm chart
-The NGINX Ingress Controller (like ingress-nginx/ingress-nginx) is distributed as a Helm chart.
+3.helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx (we can find NGINX Ingress Controller package in this repo)
+4.one public IP address
 
-A Helm chart is a package of Kubernetes YAMLs (Deployment, Service, RBAC, etc.) with parameters you can customize.
+why Helm: NGINX Ingress Controller is packaged as a Helm chart
+A Helm chart is a package of Kubernetes YAMLs (Deployment, Service, RBAC, etc.) with parameters we can customize.
 Azure Container Registry (ACR) is a private Docker registry in Azure where you store your custom container images.
 
 Create a new ACR : spanacr variable sets name to ACR (ACR name must be globally unique and use only lowercase letters.)
@@ -24,3 +28,33 @@ az acr create --name $spanacr --resource-group ingress-aks-rg --sku basic
 az aks update --name spanAKSCluster --resource-group ingress-aks-rg --attach-acr spancontainerregistry
 
 this above command will assign managed identity role to ACR to authorize AKS. 
+
+
+
+
+To create namespace: kubectl create namespace ingress-namespace
+
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+# Use Helm to deploy an NGINX ingress controller
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+    --namespace ingress-namespace \
+    --set controller.replicaCount=2 \
+    --set controller.nodeSelector."kubernetes\.io/os"=linux \
+    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
+    --set controller.service.externalTrafficPolicy=Local \
+    --set controller.service.loadBalancerIP="40.90.246.149"
+
+
+To get the pods running in our created namespace: kubectl get pods -n ingress-namespace 
+To check the load balancer service: kubectl get services --namespace ingress-namespace -o wide -w ingress-nginx-controller
+
+If we browse to the external IP address(40.90.246.149) at this stage, we see a 404 page displayed. This is because we still need to set up the connection to the external IP
+
+Now, we need to deploy the applications in node
+so for that I created a deployment yaml file, with this image "mcr.microsoft.com/azuredocs/aks-helloworld:v1" which will display the "Welcome to Azure Kubernetes Service (AKS)"
+To apply file: kubectl apply -f app.yaml
+now we need to create ingress resource: kubectl apply -f ingress resource.yaml
+when we browse with the PIP address : http://40.90.246.149
+
