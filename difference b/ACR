@@ -1,0 +1,10 @@
+Create a new ACR : spanacr variable sets name to ACR (ACR name must be globally unique and use only lowercase letters.)
+spanacr=spancontainerregistry
+
+az acr create --name $spanacr --resource-group ingress-aks-rg --sku basic
+
+
+# Attaching existing AKS Cluster using acr-name  (Integrate an existing ACR with an existing AKS cluster using the az aks update command with the --attach-acr parameter and a valid value for acr-name or acr-resource-id.)
+az aks update --name spanAKSCluster --resource-group ingress-aks-rg --attach-acr spancontainerregistry
+
+this above command will assign managed identity role to ACR to authorize AKS. 
