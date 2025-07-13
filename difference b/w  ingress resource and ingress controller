@@ -1,0 +1,26 @@
+ingress resource: it is just a resource in AKS, something like pods and node, which configures routing rules.
+
+ingress controller: it read those rules which are defined in the ingress resource, configures load balancer and does the routing.
+
+benefit of ingress:  a single IP address can be used to route traffic to multiple services in a Kubernetes cluster.
+
+Pre-requisites to create ingress controller (I have chose NGINX ingress controller):
+1. Helm3 installed (by default Helm3 installed in azure cloud shell)
+2.if not, run this curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+3.
+📦 1. NGINX Ingress Controller is packaged as a Helm chart
+The NGINX Ingress Controller (like ingress-nginx/ingress-nginx) is distributed as a Helm chart.
+
+A Helm chart is a package of Kubernetes YAMLs (Deployment, Service, RBAC, etc.) with parameters you can customize.
+Azure Container Registry (ACR) is a private Docker registry in Azure where you store your custom container images.
+
+Create a new ACR : spanacr variable sets name to ACR (ACR name must be globally unique and use only lowercase letters.)
+spanacr=spancontainerregistry
+
+az acr create --name $spanacr --resource-group ingress-aks-rg --sku basic
+
+
+# Attaching existing AKS Cluster using acr-name  (Integrate an existing ACR with an existing AKS cluster using the az aks update command with the --attach-acr parameter and a valid value for acr-name or acr-resource-id.)
+az aks update --name spanAKSCluster --resource-group ingress-aks-rg --attach-acr spancontainerregistry
+
+this above command will assign managed identity role to ACR to authorize AKS. 
