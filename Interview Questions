@@ -1,2 +1,17 @@
 			what is container Orchestration:container orchestration is a automatic way to manage the containers,which involves scaling,self-healing,networking,load balancing.
 what is sidecar container: it's a container,which will run alongside of our main application container in the same pod.which is like helper container to send the app container logs to azure monitor or log analytics workspace.
+003632:admission number  
+
+Application deployed on k8s, experienceed incresed traffic,how would you scale the apps to handle the increased load: we can scale the apps either horizontally or vertically.
+steps: first i will check resource utilization, such as CPU, memory.
+1. if there spike in CPU/memory, i will increase the pods by using the Horizontal pod autoscaler.
+2.if the issue is with the resource specific like it is running out of memory, then  will increase the CPU and memory limits by using the Vertical pod autoscaler.
+what is the role of kube proxy in k8s: kube-proxy is a networking component that runs on every node in a Kubernetes cluster.It’s responsible for:
+Routing network traffic to the correct pod based on Kubernetes Services.
+what are the consideration to create high availabile k8s cluster: Creating a highly available (HA) Kubernetes cluster ensures that your applications remain resilient and accessible, even if components fail, we can create 
+3 master nodes, and there is a load balancer in front of control plane, to distribute the traffic from external users.
+we can deploy multiple worker nodes across availability zones.
+
+what happens when a master node and worker node fails in k8s envi: when master node fails, cluster operates normally, pod management fails.
+worker node component: load balancing will not work, new pods won't create.
+
