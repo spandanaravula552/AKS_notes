@@ -1,1 +1,2 @@
-what is container Orchestration:container orchestration is a automatic way to manage the containers,which involves scaling,self-healing,networking,load balancing.
+			what is container Orchestration:container orchestration is a automatic way to manage the containers,which involves scaling,self-healing,networking,load balancing.
+what is sidecar container: it's a container,which will run alongside of our main application container in the same pod.which is like helper container to send the app container logs to azure monitor or log analytics workspace.
