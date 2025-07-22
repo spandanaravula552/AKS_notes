@@ -1,0 +1,51 @@
+🧠hashtag#Day08 of Kubernetes
+🎯 Topic: Azure ingress controller
+
+👉ingress resource: it is just a resource in AKS, something like pods and node, which configures routing rules.
+👉ingress controller: it read those rules which are defined in the ingress resource, configures load balancer and does the routing.
+
+💡benefit of ingress: a single IP address can be used to route traffic to multiple services in a Kubernetes cluster.
+
+🔹Pre-requisites to create ingress controller (I have chose NGINX ingress controller):
+
+1️⃣ Helm3 installed (by default Helm3 installed in azure cloud shell)
+2️⃣ if not, run this curl https://lnkd.in/g2JgGub5 | bash
+3️⃣ helm repo add ingress-nginx https://lnkd.in/ggdZ4xNh (we can find NGINX Ingress Controller package in this repo)
+4️⃣ one public IP address
+
+🤔why Helm? NGINX Ingress Controller is packaged as a Helm chart
+A Helm chart is a package of Kubernetes YAMLs with parameters we can customize.
+
+⚙️Creation of Ingress Controller:
+
+🔧To create namespace: kubectl create namespace ingress-namespace
+📦 helm repo add ingress-nginx https://lnkd.in/ggdZ4xNh
+🤔why helm repo: we can find the NGINX Ingress Controller package in this repo.
+🔄helm repo update
+
+
+🚀 Use Helm to deploy an NGINX ingress controller
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+ --namespace ingress-namespace \ (creating the ingress controller in this namespace )
+ --set controller.replicaCount=2 \  (replicas:2)
+ --set controller.nodeSelector."kubernetes\.io/os"=linux \ (node OS linux)
+ --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
+ --set controller.service.externalTrafficPolicy=Local \ (to see the client IP in logs)
+ --set controller.service.loadBalancerIP="40.90.246.149" (assign this public IP address to LoadBalancer service.)
+
+
+🔍To get the pods running in our created namespace: kubectl get pods -n ingress-namespace 
+🔍To check the load balancer service: kubectl get services --namespace ingress-namespace -o wide -w ingress-nginx-controller
+
+If we browse to the external IP address(40.90.246.149) at this stage, we see a 404 page displayed😅. This is because we still need to set up the connection to the external IP.
+
+🧪Now, we need to deploy the applications in node:
+
+so for that I created a deployment yaml file, with this image "https://lnkd.in/gfM84mFy" which will display the "Welcome to Azure Kubernetes Service (AKS)"
+
+To apply file: kubectl apply -f app.yaml
+
+now we need to create ingress resource: kubectl apply -f ingress resource.yaml
+
+when we browse with the PIP address : http://40.90.246.149
