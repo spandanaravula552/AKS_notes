@@ -1,0 +1,32 @@
+what is Azure Container Registry: Azure Container Registry is a managed private Docker registry. we can create store and manage private container images.
+Advantage: Instead of using docker, in azure cloud we can use ACR, to hold our containers in cloud account only images privately. whatever the applications we want to push docker containers, we can push to ACR
+
+Creation of ACR: 
+a) search for container registeries in azure portal, click on create.
+b) Give registry name that should be unique across all the azure accounts and provide location, SKU (Basic, Standard, Premium)
+c) Networking section and Encryption section is available for Prmium SKU only, click on Review+Create.
+
+Now the ACR is created, create the docker image and test it locally.
+TO ENABLE DOCKER LOGIN IN ACR: follow below steps
+a) go to ACR->Access Keys->Enable "Admin User", Then you can see Username and Password.
+
+TO PUSH THE DOCKER IMAGE TO ACR: Follow Below Steps:
+# export commands  (Note: we are exporting the commands, to set the environment variables such as ACR, image and all and make use of them in future )
+a) export ACR_REGISTRY = <your ACR name>
+b) export ACR_NAMESPACE = <your acr namespace>
+c) export ACR_IMAGE_NAME =<your docker image name>
+d) export ACR_IMAGE_TAG = <tag of the image>
+
+# Login into ACR: docker login $ACR_REGISTRY
+#To tag the docker image : docker tag <your docker image name>:<tag of the image> <your-acr-name>.azurecr.io/<your docker image name>:<tag of the image>
+Note: Need of tagging the image is, we are telling to the docker container where to push the image.
+
+
+# Now Verify with the tag name image is created or not: docker images ps
+# To push image to ACR: docker push $ACR_REGISTRY/$ACR_NAMESPACE/$ACR_IMAGE_NAME:$ACR_IMAGE_TAG
+
+# To view image in ACR:
+a) go to ACR in portal->left side,click on services->repositories->you can see the image
+
+
+NOTE: once the ACR is integrated with AKS, the worker node pools, doesn't need to authenticate with the ACR to pull the images, because integration will take care of that.
