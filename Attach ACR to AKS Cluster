@@ -14,10 +14,10 @@ metadata:
       app: acrdemo-docker
 spec:
   replicas:1
-  selector:
+  selector:   // selectors will look for the pod, which have the acrdemo-docker label, to send the request to the pod which have that label.
     matchlabels:
        app:acrdemo-docker
-  template:
+  template:  //pod template 
     metadata:
       labels:
          app: acrdemo-docker
