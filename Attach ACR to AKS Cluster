@@ -1,0 +1,71 @@
+
+#set ACR name to environment variables so, that it will pick the aks names from that
+export ACR_NAME = <your acr name>
+#To attach ACR to AKS:
+az aks update -n aksname -g resourcegroupname --attach-acr acrname
+
+now after ACR integrated with AKS. we can create the deployment file, which will create replicas.
+deployment file:
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+    name: acrdemo-deployment 
+    labels:
+      app: acrdemo-docker
+spec:
+  replicas:1
+  selector:
+    matchlabels:
+       app:acrdemo-docker
+  template:
+    metadata:
+      labels:
+         app: acrdemo-docker
+  spec:
+   containers:
+     -name: acrdemo-container
+      image: give the name of the image which is their in acr repository 
+      imagePullPolicy: Always
+      ports:
+        -containerPort: 80
+
+
+now we need to expose this application through load balancer service to access it externally
+#service.yaml file
+apiVersion: v1
+kind:Service
+metadata: 
+  name: acrdemo-loadbalancer-service
+  labels:
+    app: acrdemo-docker
+spec:
+  type:LoadBalancer
+  selector:
+   app:acrdemo-docker
+  ports:
+   -port:80
+      targetport:80
+
+
+#deploy deployment yaml file and service file
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+# to get pods
+kubectl get pods 
+kubectl describe pod <podname>
+
+output of this command show image name and it displays that it pull image from our ACR container
+and it doesn't asked for any credentials 
+
+#to get service 
+kubectl get svc
+it display loadbalancer public ip, access application through this ip
+
+
+# To delete yaml files 
+kubectl delete -f deployment.yaml 
+
+
+#Detach the acr from aks
+az aks update -n aksname -g rgname --detach-acr acrname 
