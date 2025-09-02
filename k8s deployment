@@ -32,7 +32,7 @@ This happens because the YAML file specifies that we need 3 replicas. This is ho
 
 
 
-To Create the Deployment: kubectl apply -f <yaml file name>
+To Create the Deployment: kubectl apply -f <yaml file name>  -f means file name
 
 To View the Deployment: kubectl get deployment
 
