@@ -1,0 +1,2 @@
+What is GitOps: It is a set of practices, which uses the Git as source of truth or any version controll system as source of truth and deploy applications and infra.
+K8s Namespaces: Namespaces are used to partition cluster resources between multiple users and applications. 
