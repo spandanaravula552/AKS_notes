@@ -6,3 +6,4 @@ so here boxes is nothing but resources like pods, nodes, notes is nothing but la
 What is Selector: selector is used in deployment, replica set, load balancer, ingress services.
 this is used to find and connect to the right pods.
 ex: give me the boxes which have the stickey notes of salt.
+Labels are key-value pairs for identifying and grouping Kubernetes objects, while selectors are the rules that filter these objects based on their labels. 
