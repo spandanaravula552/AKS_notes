@@ -1,0 +1,393 @@
+Azure Kubernetes with Labs:
+Nov-9-25
+Architecture of K8S:  
+1. Master Node (or) Control Plane: API Server, etcd, Control Manager, Scheduler, Cloud control manager (These components will not talk to each other)
+2. Worker Node (or) Data Plane: Kubelet, KubeProxy, Container Runtime
+Any administrator is initiating the commands through CLI or GUI, first it goes via the API server and then it goes to worker node. 
+API SERVER: api server is the front end of control plane, it is the only control plane we interact with it directly. 
+Etcd: it is a database, which stores the cluster data or entire configuration in key-value pairs. When we do “kubectl get nodes or get pods” the output what we are getting, it is coming from etcd component. 
+Control Manager: It is responsible for noticing and responding when node goes down. Replication controller is responsible for to maintain the correct number of nodes desired by the user/system. 
+Scheduler: It watches for the newly created pods, if pod is not assigned to any node, it will assign a pod to healthy node.
+Cloud control Manager: k8s leverages the resources from the cloud, such as load balancers. 
+Kubelet: Kubelet is an agent that runs on each node in cluster. It make sure that containers running in pod but kubelet will not manage containers. 
+Kube Proxy: Kube Proxy is a network proxy, that runs on each node in cluster.  It maintains network rules on nodes. It make sure that each node gets IP address.
+
+Container Runtime: It pulls images from the container registry that may be public and private, and it stops and starts the containers. 
+Pod: Pod is a smallest unit of the of cluster, which is wrapper of containers, where two or more containers resided inside the pod. 
+Selector: The selector tells the Service which Pods it should send traffic to.
+Nov-10-25:
+Pods Understanding:
+1.	To deploy the pods, we use yaml manifest files
+2.	Multiple containers are possible inside the pod.
+3.	Containers are communicate each other with the help of local host.
+
+By default, in k8s – Pods can communicate with each other without any port exposing and all doesn’t matter if it on different node. This is called as Inter-Pod communication. It happens with the help of ports. 
+4.	Lifecycle of Pods: 
+a) When we applied the pod manifest file, it goes to API server, then it hits the scheduler, then to pending state- where it works on manifest file and containers, then to succeeded state.
+
+
+
+
+
+5.	If the pod gets failed, new pod get created with the same configuration.
+Sample Pod Manifest File: # Add the nodeSelector to target the primary node pool
+      nodeSelector:
+        agentpool: <your-agentpool-name> # Replace with your actual agentpool name
+
+		apiVersion:v1
+		kind: pod
+		metadata:
+		name: demo-pod
+		labels:
+		Spec:
+		    Containers:
+			-name: web
+			 image: nginx
+			ports:
+			-name: web
+			 containerPort:80
+protocol:TCP 
+
+K8S Flow of Communication: 
+User (kubectl apply -f pod.yaml) ->API server -> etcd -> API server- >schedular -> kubelet -> container runtime ->API server -> etcd ->API server ->user. 
+Master node is free of cost.  We are only paying for worker node. 
+Creation Of k8s Cluster: 
+RG: aks-rg, 
+Cluster Details: cluster name, Region, availability zone, cluster version. 
+Primary Node Pool:  This node pool consists of node pool size and number of nodes, once cluster is created we can’t change the node pool size, but we can add/remove the numner of nodes.
+Node Pools: In addition to primary node pool, we can one more node pool also, if we want to.
+Authentication: It created the service principle for cluster.
+Netwroking: load balancer gets created. we have two options here -  basic and advanced.
+Basic- creates vnet for cluster.
+Advanced: creates vnet for cluster, pods directly connect with vnet
+Integrations: we can integrate AKS with ACR and Azure Monitor, need to add log analytics workspace for logging.
+Once cluster gets created, to interact with the cluster, we use Azure Cloud Shell.
+Interacting with Cluster: 
+1.	To get the credentials: az aks get-credentials –resource-group aks-rg –name cluster-1 
+Then it is merged the aks cluster
+2.	To get nodes: kubectl get nodes
+3.	To get pods: kubectl get pods
+To apply pods yaml file: kubectl apply -f pod.yaml
+To get services: kubectl get svc
+When we want to create the pods inside our primary node pool, we need to give node selector parameter in deployment yaml file (deployment is the wrapper of replica set controller, where it creates the replicas, replica means copy of pod.)
+Deployment yaml file:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+The spec.selector field defines the how the created replicaset finds which pods to manage.
+The spec.template field have sub field like metadata, the pods are labelled as “app:nginx”
+If we want to keep image which is reside in ACR, <acr-name>.azurecr.io/<repository-name>/<image-name>:<tag>
+Note: If repository name is not there, we can ignore that.
+Azure Container Instance: It is a service, where we can run the container in simple and fastest way in azure, without need to manage the virtual machines. we can get the source images from Quickstart images, ACR, Docker. To access these containerized application we can use IP address of ACI or custom dns name of it, customlabel.azureregion.azurecontainer.io.
+Overview of AKS: AKS is a fully managed service, we can increase the nodes count after cluster gets created, but we can’t change the node pool size, but we can add new node pools. 
+we can integrate AKS with Azure AD, Azure Monitor, Azure files, ACR, AUTO SCALE, Multiple versions.
+
+Pull the images from Docker and Push to ACR:
+Pre-requisites: 
+1.	Open cloudshell
+2.	Docker installed locally
+3.	Created ACR in azure
+1. Open terminal-> login to Azure using az login
+2. Pull Image from docker:  docker pull <image_name>:<tag> 
+3. Log in to Your Azure Container Registry (ACR): az acr login --name <your_registry_name>
+4. Tag the Docker Image for ACR: Docker requires the image to be tagged with the full login server name of your ACR so it knows where to push the image. The login server name is typically in the format <your_registry_name>.azurecr.io. 
+docker tag <image_name>:<tag> <your_registry_name>.azurecr.io/<repository_name>:<tag>
+For example, to tag the nginx:latest image for a registry named mycontainerregistry
+docker tag nginx:latest mycontainerregistry.azurecr.io/samples/nginx:latest
+Note the addition of a repository name like samples/nginx to organize images within your registry.
+5.Push the Tagged Image to ACR: docker push <your_registry_name>.azurecr.io/<repository_name>:<tag>
+We can also import image from docker to ACR: az acr import --name <acr-name> --source docker.io/library/nginx:latest --image nginx:v1
+To list out the images from ACR: az acr repository list --name acrname --output table
+Integrating the ACR with AKS using Azure Cloud Shell:
+1.	We open cloud shell, run below command (no need acr and aks in one rg)
+az aks update --name myAKSCluster --resource-group myResourceGroup --     attach-acr myACRName
+to dettach replace attach with deattach
+To schedule a pod on a specific node pool in Azure Kubernetes Service (AKS) using a deployment YAML file, we can utilize node selectors:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: my-app
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: my-app
+      template:
+        metadata:
+          labels:
+            app: my-app
+        spec:
+          nodeSelector:
+            agentpool: <your-primary-nodepool-name> # Replace with your actual primary node pool name
+          containers:
+          - name: my-container
+            image: <your_registry_name>.azurecr.io/my-image:latest
+            ports:
+            - containerPort: 80
+
+
+After opening the cloudshell, create a folder, and create a deployment yaml file and apply it. You will get pods in your primary node pool. To apply: kubectl apply -f aks-deployment.yaml
+
+11-Nov-25:
+Kube Config file: In kube folder, config file is available. Kube config file is in the form of yaml format.
+~/.kube/config file, located within the .kube folder in your user's home directory, does contain credentials for accessing Azure Kubernetes Service (AKS) clusters.
+When you use the az aks get-credentials command, it downloads the necessary access credentials for your AKS cluster and merges them into this ~/.kube/config file, 
+Config file contains the configuration information required to connect and access the k8s cluster. enabling kubectl and other Kubernetes tools to connect to your AKS cluster. 
+And also, it contains authentication details for accessing the clusters, such as client certificates, tokens.
+
+Azure RBAC:  azure rbac is an authorization system, it provides access management to azure resources. Who can do what
+with the help of rbac, we can allow users to manage vnet or VM or any other resources within the resource group. 
+
+How it Works: so, in Microsoft entra id we have users, group, managed identities, or app registrations.
+
+So, we can allow the users, group, managed identities and application to access the azure resources by giving the role assignments at particular scope. Like contributor role or any other role.
+so, we can limit the access to the azure resources by adding the role assignmnets to the users etc. 
+We can apply RBAC at resource group, resources, sub, management group at IAM.
+Authentication verifies who you are, validates your identity; authorization decides what you can do, what the things you can manage.
+
+Kubernetes RBAC Roles (Inside Cluster):
+Kubernetes Role	Scope	Description
+cluster-admin	Cluster-wide	Full access to every resource in every namespace.
+admin	Namespace	Manage most resources within a namespace but not cluster-wide settings.
+edit	Namespace	Edit (create, update, delete) most resources, except roles and bindings.
+view	Namespace	Read-only access to most resources (cannot edit).
+
+
+
+
+
+
+
+     		
+Troubleshooting AKS:   
+To know about pods: kubectl get pods
+output:
+Name STATUS Age Ready: pod name, whether it is running or not, age in sec/min/hr, ready 1/1 or 0/1
+To get more information about pods: kubectl get pods -o wide
+Output: 
+Name, status, age, ready, IP of pod, Node (in which node, pod is available)
+To get in depth information about pod: kubectl describe pod podname 
+Output: 
+we get pod details, namespace, labels info, con id, img, img id, ports, cpu, memory, events.
+
+Kubernetes Events: Events sources are used for monitoring and troubleshooting issues in k8s. events capture and record the information of k8s objects such as pod, node, deployment, services. So we can view the activities and identify the issues, but events are available for only one hour after they generated. 
+
+We can view the events by:     kubectl get events
+Event Objects: 
+1.	Type: It indicated the severity of event, there are two types: warning and normal
+Warning means it’s like an error, some problem with the k8s objects, such as pod, node.
+2.	Reason: it will show the error reason like crashloopbackOff
+3.	Message: human-readable message to understand the issue. 
+4.	Namespace: The namespace of the k8s object, to which event is associated with.
+5.	First seen: time, when the event is observed
+6.	Last seen: time, when event is last observed.
+7.	Object: to which k8s object event is associated. 
+
+ImagePullBackOff Error: This error came into picture because when pod is unable to pull the images from ACR.
+There is no integration between aks and acr, proper RBAC role is missing, misspelling of image name and tag name. 
+12-Nov-25: 
+What is DaemonSet: Daemon set is a k8s object, workload controller, it ensures pod is running on node, and it removes the pod when node get deleted. 
+
+
+✅ Round 1 – Technical Screening
+1️⃣ What are your day-to-day responsibilities?
+2️⃣ How does your CI/CD pipeline look, and what was your contribution?
+3️⃣ What advantages does Azure DevOps CI/CD provide compared to Jenkins?
+4️⃣ Write an Azure DevOps YAML pipeline to build and push an image to ACR.
+5️⃣ Explain Terraform state file management.
+6️⃣ Write a script to rotate sandeep.log into sandeep.log.<current date and time> when it exceeds 1MB.
+7️⃣ CMD vs ENTRYPOINT in Docker.
+8️⃣ How do you investigate a pod stuck in Pending state?
+9️⃣ When you run kubectl apply -f file.yaml, how does the request flow internally?
+✅ Round 2 – Deep Dive & Architecture
+1️⃣ Why did you choose GitOps, and what advantages does it bring?
+2️⃣ What was the biggest challenge you faced in your last organisation?
+3️⃣ How would you plan a Kubernetes version upgrade? What are the prerequisites?
+4️⃣ Write a PowerShell script to read VM names from JSON and provision VMs in Azure.
+5️⃣ How do you design an application for high availability?
+6️⃣ If your application is experiencing latency, how do you troubleshoot it?
+7️⃣ How does Managed Identity work in Azure?
+8️⃣ How do you manage secrets inside a CI/CD pipeline?
+9️⃣ How do you import existing Azure infrastructure into Terraform?
+
+1)	Introduce yourself, Day to day activities, previous project experience
+2) What is the Ticketing tool you worked on? JIRA 
+And What type of tickets you used to get?
+LINUX:
+3) What is Soft link and Hard link in file system?
+4) Scenario: One of the user is reported that they can’t connect to the SSH into the linux server, what steps you take to resolve this?
+5) What is port number of SSH?
+6) Scenario: One of the user is getting permission denied while accessing a file but he has correct ownership, what else could be the issue and what you will check for the resolution?
+We check for the file permission by issuing the ls-lrt command, check whether the user has permission at directory level. 
+AWS:
+7) Scenario: Suppose your Ec2 instance, your are not able to connect to internet even it is in public subnet, what went wrong? EC2 instance should have pip address attached to it, nsg allowed, fw check, os fw check, routes. 
+GIT:
+9) How do you resolve git merge conflicts, when a developer commits at same time?
+git fetch origin: to fetch and merge the latest changes
+git pull origin <branch-name>
+git status: to identify the conflicted files
+then we get conflicted lines b/w our code and what another developer did that, then we resolve the conflicts manually, then we do git add, git commit and git pull to origin branch 
+10) What is the difference b/w git pull and git fetch?
+11) What is .ignore means?
+DOCKER:
+12) How can you copy files b/w container and host? docker cp /path/on/host <container_id>:/path/in/container
+13) How do you optimize the docker image size?
+14) What is multi stage dockerfile?
+15) Are you able to write dockerfile?
+16) Scenario: You have containerized java appln but when you run the container the application immediately stops, how do you troubleshoot?
+We will check whether that app running locally or not, then we check CMD and ENTRPOINT instruction we written them in correct syntax or not, we check for dependencies, tools copying app file and work dir in docker file.
+17) Scenario: For suppose a container is using too much of memory and it is affecting the host in that case how do you restrict the resource usage?
+By default container can use as much memory it needed from that host, We will check which container is consuming too much memory by issuing docker stats command, then we can restrict the memory usage by giving the memory limits when we are running the container like docker run -d –cpus, --memory=”512m”
+JENKINS:
+18) What is the difference b/w freestyle and pipeline job?
+19) What are the build triggers in Jenkins?
+20) How do you handle secret credentials in Jenkins?
+KUBERNETES:
+21) What is a replica set?
+22)What is the difference b/w Horizontal and vertical autoscaling?
+HPA: horizontal pod autoscaling means increating or scaling the number of pods up and down when load is increased. We can add yaml file using minreplicas and maxreplicas but keeps the cpu 80% only.
+VPA: it increses the resource limits such as CPU and memory when the container inside a pod is running out of memory, which is used to tuning the resources limits such as cpu and memory. Vpa increases cpu and memory limits, keeps the pod count as it is. 
+23) How would you debug a CrashLoopBackOff pod ?
+Crashloopbackoff means the container insidea pod is starting and crashes, we issue a command kubectl describe pod podname and we look for events and see error message, any OOM error like that, we check for pod logs by issue command kubectl logs pod podname –previous (to check previous run logs) and then we check the resources cpu and memory. 
+A: check liveness and readiness probes
+24) What happens when we delete a deployment?
+25) What is the diff b/w Taint and Tolerance?
+Taint and Tolerance are work together to control which pod should assign or sheduled onto which node. 
+Taints are applied to node and Tolerance applied to pod.
+For example we have production workload nodes, so that we can taint the node with particular key, value, operator, and effect, if pod have same tolerance with the same same key value operator and effect then pod is scheduled on to that node. kubectl taint nodes gpu-node hardware=gpu:NoSchedule
+Terraform:
+26) Explain Terraform Architecture?
+Terraform init, plan, apply
+27) What is terraform state?
+Current state of the infrastructure
+28)Scenario: You are working in a team and multiple people are modifying the same terraform configuration, one of your colleague accidentally corrupted the terraform state file, How do you handle this scenario?
+Ansible:
+29) Have you worked on Ansible, Explain how ansible works and it integrate it?
+Shell script:
+30) For shell shell did you copied templates or will you write shell script
+31) How can you rate for shell script out of 10
+
+Azure Front Door: 
+It is a cloud content delivery network, which provides HA, Fast, Reliability, security,reduce latency, scalability to our application by using Microsoft global edge network. 
+Microsoft Edge Network: it is a vast private-fibre optic network, which connects MS global datacenter to deliver the services with low latency.
+WorkFlow: 
+
+
+
+	US
+
+
+User->Fron Door->Microsoft global edge location->Microsoft back none network->backend server of front door, where application is hosted.
+
+Traffic Manager: It is a Layer-7 DNS based Global Traffic Load Balancer, It route the request based on DNS information and various routing methods.
+Components of Traffic Manager:
+1.	In portal,we create traffic manager profile by giving rg, name of it and routing method.
+2.	EndPoints: there are three tupe of end points we can add to traffic manager
+azure endpoint, public endpoint, nested endpoint. 
+3.	Azure Endpoint: azure endpoint means services hosted in azure such as PaaS service web apps.
+4.	External Endpoint: External endpoints which are hosted outside of azure such as IPV4/IPV6 ip address, FQDN.
+5.	Nested Endpoint: child TM profiles. a child profile is added as an endpoint to a parent profile. Both the child and parent profiles can contain other endpoints of any type, including other nested profiles.
+Workflow: Whenever user is try to access the application which is hosted on endpoint, user first hit public dns server where we configured about TM, then TM look for routing methods and endpoints, then TM send the endpoint to user-> then user request is sent to that particular endpoint, he is able to reach the application.
+Routing Method:
+1.	Priority Routing Method: when we want to send all traffic to primary end point we give priority less to that end point, and we maintain backup endpoints to that, so that if primary goes down we have app availability from the secondary end point as well. 
+2.	Weighted: When we want to distribute the traffic across endpoints based on their weight, if we want to equally or evenly distribute the traffic across endpoint, we can give same weight to them.
+3.	Performance: let say you have endpoints in geographic locations, and users are also in diff locations, when user want to access the endpoint which is closest to them for low latency. 
+
+Application Gateway: 
+It is a layer-7 Load balancer, which is used to distribute the traffic for web applications.
+PIP:App Gw can have public IP address and private ip address and both.
+Workflow: 
+Whenever user request the PIP of app gateway-> that request is processed by listerner, in listener, we configure it with frontend IP, backendpool, ports, and protocol. 
+Listener checks the host header, host header means to which domain user is requesting, it check for that. 
+In HTTP setting, we configure the rules to the backend pool based on path based routing or host based routing and also health probe to check the health status of the backend pool.
+
+https://www.linkedin.com/posts/manel-mokni-881951278_k8s-questions-activity-7393558280008060929-KVyp?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAD1opY8B0eoT_ubmyzM83gYxR-IOlu80woU  (k8s interview questions)
+
+When to use multi-container pods: 
+Normally pod have one container, a multi-pod container have one or more containers inside a pod. For example sidecar container – for logging and monitoring, Ambassador container -  for proxy and configuration management. In these type of situations we can use multi-container pod. 
+Namespaces are a way to divide cluster resources between multiple users 
+Difference between Daemonset, statefulset, and deployment:
+Deployment: it’s used for stateless applications. Such as web servers, REST API
+Purpose:
+•	Ensures a specified number of identical Pods are running.
+•	Handles rolling updates, rollbacks, and scaling easily.
+•	No persistent storage
+2. StatefulSet
+A StatefulSet is for stateful applications — where each Pod has a unique identity and possibly persistent storage.
+Purpose:
+•	Provides stable network IDs and persistent volumes for each Pod.
+•	Pods are created, updated, and deleted in a specific order.
+Use cases:
+•	Databases (e.g., MySQL, PostgreSQL)
+3. DaemonSet
+A DaemonSet ensures that one Pod runs on every (or some) node in the cluster.
+Purpose:
+•	Deploys Pods to all (or selected) nodes automatically.
+•	Used for node-level system services like monitoring or logging.
+Service Yaml file: 
+Apiversion:v1
+Kind:service
+Metadata: 
+    Name: demo-service
+Spec:
+   Selector:
+       app:nginx
+Ports:
+   -port: 80 ->the port exposed by the service
+    targetPort:2026 -> the port that pod is listening/receiving the traffic
+   protocol: TCP
+type: ClusterIP
+•  The selector tells the Service which Pods it should send traffic to.
+•  Kubernetes matches this selector with the labels defined in Pods.
+
+K8S Secrets: Secrets are used to stores the sensitive info such as token, api keys, pwd, connection string of applications. by default, k8s have etcd database to store the k8s secrets, and we can also store the secrets in key vault.
+we can create the secrets with the help of yaml or json file and we can consume them using environment variables and mounting secret file in a pod. 
+We can create secrets in azure key vault and integrate it with the AKS.
+ConfigMaps: configmap is an k8s object, which is used to store the non-sensitive information in the form of key value pairs, pods can consume them through environment variables or command line arguments, The pod and configmap must be in same namespace.. ConfigMap does not provide secrecy or encryption. If the data you want to store are confidential, use a Secret rather than a ConfigMap
+
+Kubernetes Probes: k8s have three type of probes:
+1.	Liveness Probe
+2.	Readiness Probe
+3.	StartUp probe
+Liveness Probe: This probes checks whether the container is running properly or not, if it fails k8s restart the container automatically. 
+Readiness Probe: This probe is used to check whether the container is ready to receive the traffic or not, if not, the traffic is not sent to the container. 
+Startup Probe: This probe checks the container started successfully, if not it kills the container and restart it. 
+We define these probes in deployment yaml manifests. 
+Note:  ./testweb.sh <publicipOfLoadBalancer> gives the how many requests came for web app.
+Once the startup probe succeeds, Kubernetes disables liveness and readiness probes.means they only start once the app starting up. 
+Probe type: http, tcp socket, exec command  
+
+
+14-Nov-25:
+What is proxy and reverse proxy:
+Proxy (or) Forward Proxy: proxy is a server, which protects the client ip address from the internet and provides it’s own ip address to access the internet. Examples are VPN, public IP address, NAT gateway. 
+Reverse Proxy: It is a server, which acts as a middleman, it’s protect the group of servers from the clients. For example there a backendpool behind the LB, whenever client hits the FIP of LB, lb hits the backendpool servers. Servers gets the LB FIP not client IP. 
+Network Policies in AKS cluster:
+Network policies is a k8s specification, which defines network access policies for communication between the pods.
+By default pods can send and receive the traffic in cluster. We can apply network rules for the group of pods, with the help of labels, we defines network rules in yaml manifests.
+Note: while creating the cluster only, we must enable network policies feature to cluster, we can’t enable this feature once cluster is created.
+Azure Provides 3 network policies
+1.	Azure CNI – container network interface
+2.	Azure network policy manager
+3.	Calico 
+1st and 2nd policies uses Linux IP tables. 
+Deployment of springboot microservices into AKS cluster using azure pipel
