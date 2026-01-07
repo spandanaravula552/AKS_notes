@@ -1,0 +1,15 @@
+Taints and Tolerations are work together to ensure that pod should not place on inappropriate node.
+Taint is applied to Node, Tolerations applied to pod.
+to apply the taint to node: kubectl taint node <nodename> gpu=true:NoSchedule
+these effects should apply to pod and node, the Effects are: NoSchedule, PreferNoSchedule, NoExecute
+NoSchedule
+No new Pods will be scheduled on the tainted node unless they have a matching toleration.
+To apply the tolerations to pod - we don't have option to apply using command, we can apply in pod yaml file.
+ex: 
+tolerations:
+- key: "gpu"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
+so then the pod is scheduled on to a node which have same taint that is gpu as key and true as value. 
+To remove the taint from node: kubectl taint node <nodename> gpu=true:NoSchedule- (once u executed, you output as node untainted) 
