@@ -68,7 +68,7 @@ pipeline->select repo, where the docker file is present->starter pipeline->then 
 
 is 2, so the tag of image is in incremental mode like 1, 2, 3, 4, 5 etc.
 
-**Dec 1st 2025**
+Dec 1st 2025
 
 first we neeed to create serviceconnection between azure devons and AKS, for easy to pull the AKS info, privileges and all. to do that choose service connection type
 
